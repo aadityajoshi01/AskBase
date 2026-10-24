@@ -19,8 +19,10 @@ agent1_ai-analyst/
   backend/sql_generator.py   # schema-aware generate_sql() + identifier guard
   backend/agent.py           # synthesize_answer() grounded in real results
   backend/repair_loop.py     # bounded repair: every candidate through the same injected validator
-  AUDIT.md / ENDPOINT.md / CONTRACT_PROPOSAL.md
-  tests/                     # 55 mocked tests
+  smoke_test.py              # Part 9 live probe — run when start.bat is up
+  AUDIT.md / ENDPOINT.md / CONTRACT_PROPOSAL.md / PROMPTS.md
+  TEST_REPORT.md / HANDOFF.md / RESULTS.md
+  tests/                     # 60 mocked tests
 ```
 
 ## Running tests (no model or GPU needed)
