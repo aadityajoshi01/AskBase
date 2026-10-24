@@ -120,7 +120,7 @@ $('#hero-upload').addEventListener('click', () => $('#dataset-upload').click());
 
 function formatValue(value, column = '') {
   if (typeof value !== 'number') return escapeHtml(value);
-  if (/revenue|total|price/i.test(column)) return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+  if (/revenue|total|price/i.test(column)) return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
   return value.toLocaleString('en-US');
 }
 

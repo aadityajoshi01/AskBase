@@ -5,7 +5,7 @@
       "label": "Verified analysis",
       "response": {
         "status": "success",
-        "answer": "Technology generated the highest revenue at $48,250, followed by Home & Kitchen at $32,480.",
+        "answer": "Technology generated the highest revenue at ₹48,250, followed by Home & Kitchen at ₹32,480.",
         "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price) AS revenue\nFROM order_items oi\nJOIN products p ON p.product_id = oi.product_id\nGROUP BY p.category\nORDER BY revenue DESC;",
         "columns": ["Category", "Revenue"],
         "rows": [["Technology", 48250], ["Home & Kitchen", 32480], ["Sports", 18920], ["Books", 12640]],
@@ -22,7 +22,7 @@
       "label": "Messy data warnings",
       "response": {
         "status": "success",
-        "answer": "Home & Kitchen has inconsistent stored labels. Technology leads recorded revenue at $48,250, but raw category totals need careful interpretation.",
+        "answer": "Home & Kitchen has inconsistent stored labels. Technology leads recorded revenue at ₹48,250, but raw category totals need careful interpretation.",
         "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price) AS revenue\nFROM order_items oi\nJOIN products p ON p.product_id = oi.product_id\nGROUP BY p.category\nORDER BY revenue DESC;",
         "columns": ["Category", "Revenue"],
         "rows": [["Home & Kitchen", 32480], ["home & kitchen ", 2140], ["Technology", 48250], ["TECHNOLOGY", 3180]],
