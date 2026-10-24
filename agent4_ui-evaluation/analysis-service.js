@@ -19,6 +19,25 @@ export async function runAnalysis(question, databaseConfig, options = {}) {
   await wait(options.delay ?? 450, options.signal);
   const scenario = scenarioDocument.scenarios.find(({ id }) => id === (options.scenario || 'success')) || scenarioDocument.scenarios[0];
   const result = structuredClone(scenario.response);
+  const profileContext = options.aiContext || options.dataset?.aiContext;
+  if (profileContext) {
+    result.meta = {
+      ...result.meta,
+      mode: 'mock',
+      aiContextReceived: true,
+      tableCount: profileContext.tables?.length || 0,
+      columnCount: profileContext.columns?.length || 0,
+    };
+    result.warnings = [
+      'Mock analysis only: no live AI request, SQL execution, or verified result was performed.',
+      ...(result.warnings || []),
+    ];
+    result.verification = {
+      ...result.verification,
+      passed: false,
+      message: 'Profile context was received by the mock analysis boundary; live analysis is not connected.',
+    };
+  }
   assertValid(result, analysisResponseSchema, 'Analysis response');
   result.row_count = result.rowCount;
   return result;

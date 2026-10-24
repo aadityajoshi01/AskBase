@@ -19,16 +19,17 @@ The application is explicitly labelled **Mock backend**. Evaluation values are *
 
 ## Dataset upload
 
-- CSV-first drag/drop and keyboard-accessible file selection
+- CSV-first multi-file drag/drop and keyboard-accessible file selection
 - Optional DB/SQLite metadata selection
-- Local-only parsing with no file upload to the server
+- Local-only parsing and profiling with no file upload to the server
 - UTF-8 BOM and comma, semicolon, or tab delimiter support
 - Quoted fields, escaped quotes, embedded delimiters, and multiline values
-- Friendly file and header validation
-- Inferred number/date/text types and null counts
+- File, encoding, header, size, row, and column validation
+- Logical type inference, null/distinct/duplicate/invalid counts, numeric/date statistics, and quality warnings
+- Privacy-aware sanitized AI context with sensitive samples omitted
 - File, size, row, column, and delimiter summary chips
 - Six-row preview and downloadable sample CSV
-- Uploaded-dataset analysis disabled until backend integration
+- Uploaded-dataset analysis receives profile context through the mock boundary and is explicitly marked mock-only
 
 ## Evaluation and Docs
 
@@ -74,6 +75,6 @@ npm test
 
 Open `http://127.0.0.1:4173`.
 
-All **31 tests pass**, including the original 14. Browser verification covers the verified result, pipeline, Developer telemetry, CSV preview, disabled uploaded-data analysis, evaluation filtering, and Docs.
+All **36 tests pass**, including the original 14. Browser verification covers the verified result, pipeline, Developer telemetry, local profiling contracts, mock profile-context handoff, evaluation filtering, and Docs.
 
 See `README.md` for the Mermaid architecture diagram, complete file map, configuration reference, integration contract, and changelog.

@@ -4,10 +4,9 @@ import exampleConfig from './config/examples.json' with { type: 'json' };
 import sampleDatabase from './config/sample-db.schema.json' with { type: 'json' };
 import evaluationFixture from './config/evaluation.fixtures.json' with { type: 'json' };
 import apiContract from './docs/api-contract.json' with { type: 'json' };
-import datasetProfileSchema from './schemas/dataset-profile.schema.json' with { type: 'json' };
 import evaluationReportSchema from './schemas/evaluation-report.schema.json' with { type: 'json' };
 import { analysisScenarios, runAnalysis } from './analysis-service.js';
-import { canAnalyzeDataset, createDatasetRequest, inspectDataset } from './dataset.js';
+import { canAnalyzeDataset, createDatasetRequest, inspectDataset, profileFiles } from './dataset.js';
 import { calculateMetrics, evaluationScenarios, filterScenarios } from './evaluation.js';
 import { applyThemeTokens } from './lib/config.js';
 import { createEventBus } from './lib/event-bus.js';
@@ -30,6 +29,9 @@ const store = createStateStore();
 let activeController;
 let requestCounter = 0;
 let currentDataset = { kind: 'sample', fileName: 'Sample retail' };
+let uploadedFiles = [];
+let profileResult = null;
+let profiling = false;
 let uploadKind = 'csv';
 let currentPipeline = [];
 let latestTimeline = [];
@@ -145,17 +147,60 @@ function resetAnalysisView() {
 }
 
 function restoreSample() {
+  uploadedFiles = [];
+  profileResult = null;
+  profiling = false;
   currentDataset = { kind: 'sample', fileName: 'Sample retail' };
   $('#dataset-upload').value = '';
   $('#sample-source').classList.add('active');
   $('#upload').classList.remove('active');
   $('#sample-explorer').hidden = false;
   $('#dataset-preview').hidden = true;
+  $('#uploaded-files').hidden = true;
+  $('#profile-panel').hidden = true;
   $('#active-source').innerHTML = `${icon('database')}Sample retail`;
   $('#upload-backend-note').hidden = true;
   $('#scenario').disabled = false;
+  $('#profile-data').disabled = true;
+  $('#clear-files').disabled = true;
+  $('#profile-status').hidden = true;
   resetAnalysisView();
   setAnalyzing(false);
+}
+
+function setNoUploadedDataset() {
+  uploadedFiles = [];
+  profileResult = null;
+  currentDataset = null;
+  $('#sample-source').classList.remove('active');
+  $('#upload').classList.add('active');
+  $('#sample-explorer').hidden = true;
+  $('#dataset-preview').hidden = true;
+  $('#uploaded-files').hidden = true;
+  $('#profile-panel').hidden = true;
+  $('#active-source').innerHTML = `${icon('upload')}No uploaded files`;
+  $('#upload-backend-note').hidden = true;
+  $('#scenario').disabled = true;
+  $('#profile-data').disabled = true;
+  $('#clear-files').disabled = true;
+  $('#profile-status').hidden = true;
+  resetAnalysisView();
+  setAnalyzing(false);
+}
+
+function fileId(file) {
+  return `${file.name}:${file.size}:${file.lastModified}`;
+}
+
+function renderFileList() {
+  const container = $('#uploaded-files');
+  if (!uploadedFiles.length) {
+    container.hidden = true;
+    container.innerHTML = '';
+    return;
+  }
+  container.hidden = false;
+  container.innerHTML = `<div class="uploaded-files-heading"><div><span class="eyebrow">UPLOADED FILES</span><h3>${uploadedFiles.length} CSV file${uploadedFiles.length === 1 ? '' : 's'} ready</h3></div><span class="privacy-pill">${icon('shield')}Local processing</span></div><div class="uploaded-file-list">${uploadedFiles.map((entry) => `<article class="uploaded-file ${entry.error ? 'has-error' : ''}"><span class="uploaded-file-icon">${icon(entry.error ? 'warning' : 'file')}</span><div class="uploaded-file-copy"><strong>${escapeHtml(entry.file.name)}</strong><small>${formatBytes(entry.file.size)} · ${entry.error ? escapeHtml(entry.error) : 'Validated · ready to profile'}</small></div><button class="light-pill remove-file" type="button" data-remove-file="${escapeHtml(entry.id)}">Remove</button></article>`).join('')}</div>`;
 }
 
 function renderDatasetPreview(dataset) {
@@ -163,39 +208,151 @@ function renderDatasetPreview(dataset) {
   $('#upload').classList.add('active');
   $('#sample-explorer').hidden = true;
   $('#active-source').innerHTML = `${icon('file')}${escapeHtml(dataset.fileName)}`;
-  $('#upload-backend-note').hidden = false;
-  $('#scenario').disabled = true;
+  $('#upload-backend-note').hidden = dataset.kind === 'sqlite';
+  $('#scenario').disabled = dataset.kind === 'sqlite';
   const chips = [dataset.fileName, formatBytes(dataset.size), dataset.kind === 'csv' ? `${dataset.rowCount.toLocaleString()} rows` : 'Schema pending', dataset.kind === 'csv' ? `${dataset.columns.length} columns` : 'SQLite', dataset.delimiter ? delimiterName(dataset.delimiter) : null].filter(Boolean);
-  const schema = dataset.kind === 'csv' ? `<div class="table-scroll"><table class="dataset-schema-table"><thead><tr><th>Column</th><th>Inferred type</th><th>Null count</th></tr></thead><tbody>${dataset.columns.map((column) => `<tr><td>${escapeHtml(column.name)}</td><td><span class="type-chip">${column.type}</span></td><td>${column.nullCount}</td></tr>`).join('')}</tbody></table></div>` : '';
+  const schema = dataset.kind === 'csv' ? `<div class="table-scroll"><table class="dataset-schema-table"><thead><tr><th>Column</th><th>Inferred type</th><th>Null count</th></tr></thead><tbody>${dataset.columns.map((column) => `<tr><td>${escapeHtml(column.name)}</td><td><span class="type-chip">${escapeHtml(column.logicalType || column.type)}</span></td><td>${column.nullCount}</td></tr>`).join('')}</tbody></table></div>` : '';
   const preview = dataset.kind === 'csv' ? `<h3 class="preview-title">Data preview · first ${dataset.rows.length} rows</h3><div class="table-scroll"><table class="result-table"><thead><tr>${dataset.columns.map((column) => `<th>${escapeHtml(column.name)}</th>`).join('')}</tr></thead><tbody>${dataset.rows.map((row) => `<tr>${row.map((value) => `<td>${escapeHtml(value)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '';
-  $('#dataset-preview').innerHTML = `<div class="dataset-header"><div class="dataset-file"><span>${icon('file')}</span><div><strong>${escapeHtml(dataset.fileName)}</strong><small>${dataset.kind === 'csv' ? 'CSV parsed locally · nothing uploaded' : 'SQLite metadata only · nothing uploaded'}</small></div></div><button class="light-pill" data-remove-dataset>Remove dataset</button></div><div class="dataset-chips">${chips.map((chip) => `<span class="dataset-chip">${escapeHtml(chip)}</span>`).join('')}</div>${schema}${preview}<p class="upload-backend-note">${icon('warning')}Analysis of uploaded CSVs is available once the backend is connected.</p>`;
+  $('#dataset-preview').innerHTML = `<div class="dataset-header"><div class="dataset-file"><span>${icon('file')}</span><div><strong>${escapeHtml(dataset.fileName)}</strong><small>${dataset.kind === 'sqlite' ? 'SQLite metadata only · nothing uploaded' : 'CSV preview · source remains in this browser session'}</small></div></div></div><div class="dataset-chips">${chips.map((chip) => `<span class="dataset-chip">${escapeHtml(chip)}</span>`).join('')}</div>${schema}${preview}`;
   $('#dataset-preview').hidden = false;
-  resetAnalysisView();
-  setAnalyzing(false);
 }
 
-async function handleDatasetFile(file) {
-  if (!file) return;
+function formatStatistics(statistics) {
+  if (!statistics || !Object.keys(statistics).length) return '—';
+  return Object.entries(statistics)
+    .filter(([, value]) => value !== null)
+    .map(([key, value]) => `${key}: ${typeof value === 'number' ? Number(value.toFixed(2)).toLocaleString() : value}`)
+    .join(' · ') || '—';
+}
+
+function renderProfile(profile) {
+  const panel = $('#profile-panel');
+  const summary = profile.summary;
+  const statusLabel = profile.status === 'success' ? 'Profile complete' : profile.status === 'warning' ? 'Profile complete with warnings' : 'Profile failed';
+  const statusIcon = profile.status === 'success' ? 'check' : profile.status === 'warning' ? 'warning' : 'close';
+  const errors = profile.errors?.length ? `<div class="profile-errors">${profile.errors.map((error) => `<p>${icon('warning')}${escapeHtml(error.fileName ? `${error.fileName}: ${error.message}` : error.message)}</p>`).join('')}</div>` : '';
+  const fileSections = profile.files.map((file) => `<details class="profile-file" ${profile.files.length === 1 ? 'open' : ''}><summary><span>${icon(file.status === 'error' ? 'warning' : 'file')}<strong>${escapeHtml(file.name)}</strong></span><span>${file.rowCount.toLocaleString()} rows · ${file.columnCount} columns · ${file.status}</span></summary><div class="profile-file-body"><div class="dataset-chips"><span class="dataset-chip">${formatBytes(file.sizeBytes)}</span><span class="dataset-chip">${escapeHtml(file.delimiterName || 'Unknown delimiter')}</span><span class="dataset-chip">${file.duplicateRowCount} duplicate rows</span><span class="dataset-chip">${file.warnings.length} warnings</span></div>${file.errors?.length ? `<div class="profile-errors">${file.errors.map((error) => `<p>${icon('warning')}${escapeHtml(error.message)}</p>`).join('')}</div>` : ''}<div class="table-scroll"><table class="dataset-schema-table profile-table"><thead><tr><th>Column</th><th>Type</th><th>Nulls</th><th>Distinct</th><th>Invalid</th><th>Statistics</th><th>Warnings</th></tr></thead><tbody>${file.columns.map((column) => `<tr><td><strong>${escapeHtml(column.name)}</strong>${column.potentialIdentifier ? '<small>Potential identifier</small>' : ''}${column.potentialSensitiveData ? '<small>Potential sensitive data</small>' : ''}</td><td><span class="type-chip">${escapeHtml(column.logicalType)}</span></td><td>${column.nullCount} (${column.nullPercentage.toFixed(1)}%)</td><td>${column.distinctCount}</td><td>${column.invalidCount}</td><td>${escapeHtml(formatStatistics(column.statistics))}</td><td>${column.warnings.length ? column.warnings.map((item) => `<span class="profile-warning">${escapeHtml(item.message)}</span>`).join('') : '—'}</td></tr>`).join('')}</tbody></table></div>${file.warnings.length ? `<div class="warning-list">${file.warnings.map((item) => `<span class="warning-item">${icon('warning')}${escapeHtml(item.message)}</span>`).join('')}</div>` : ''}</div></details>`).join('');
+  panel.innerHTML = `<div class="profile-header"><div><span class="eyebrow">DATA PROFILE</span><h2>${icon(statusIcon)}${statusLabel}</h2><p>Real values calculated locally. Source files are not uploaded or sent to the analysis provider.</p></div><div class="profile-actions"><span class="profile-status-badge ${profile.status}">${escapeHtml(profile.status)}</span>${profile.status === 'error' ? '<button class="light-pill" type="button" data-retry-profile>Retry profiling</button>' : ''}</div></div><div class="profile-metrics"><article><strong>${summary.fileCount}</strong><span>Files</span></article><article><strong>${summary.totalRows.toLocaleString()}</strong><span>Total rows</span></article><article><strong>${summary.totalColumns}</strong><span>Total columns</span></article><article><strong>${summary.warningCount}</strong><span>Warnings</span></article><article><strong>${summary.errorCount}</strong><span>Errors</span></article></div>${errors}<div class="profile-files">${fileSections}</div><div class="ai-context-card"><div><strong>${icon('shield')}AI context ready</strong><p>Only schema metadata, aggregates, warnings, and up to three non-sensitive sample values per column are available to analysis. Full CSV text is excluded.</p></div><span id="ai-context-status">${profile.aiContext ? 'Sanitized context built' : 'Unavailable'}</span></div>`;
+  panel.hidden = false;
+}
+
+async function handleDatasetFiles(fileList) {
+  const files = [...fileList].filter(Boolean);
+  if (!files.length) return;
+  if (uploadKind === 'sqlite') {
+    try {
+      const dataset = await inspectDataset(files[0], appConfig.limits);
+      uploadedFiles = [];
+      profileResult = null;
+      currentDataset = dataset;
+      $('#profile-data').disabled = true;
+      $('#clear-files').disabled = true;
+      renderDatasetPreview(dataset);
+      showToast('SQLite metadata selected. CSV profiling is available in CSV mode.');
+    } catch (error) {
+      $('#upload-error').textContent = error.message;
+      $('#upload-error').hidden = false;
+    }
+    return;
+  }
   $('#upload-error').hidden = true;
-  try {
-    const dataset = await inspectDataset(file, appConfig.limits);
-    if (dataset.kind === 'csv') assertValid(dataset, datasetProfileSchema, 'Dataset profile');
-    currentDataset = dataset;
-    renderDatasetPreview(dataset);
-    showToast('Dataset preview ready. Analysis requires the backend.');
-  } catch (error) {
-    $('#dataset-upload').value = '';
-    $('#upload-error').textContent = error.message;
+  $('#profile-status').hidden = true;
+  profileResult = null;
+  const nextEntries = [];
+  for (const file of files) {
+    try {
+      const preview = await inspectDataset(file, appConfig.limits);
+      nextEntries.push({ id: fileId(file), file, preview, error: null });
+    } catch (error) {
+      nextEntries.push({ id: fileId(file), file, preview: null, error: error.message });
+    }
+  }
+  const existing = new Set(uploadedFiles.map((entry) => entry.id));
+  uploadedFiles = [...uploadedFiles, ...nextEntries.filter((entry) => !existing.has(entry.id))];
+  currentDataset = { kind: 'csv', fileName: uploadedFiles.length === 1 ? uploadedFiles[0].file.name : `${uploadedFiles.length} CSV files`, files: uploadedFiles.filter((entry) => !entry.error).map((entry) => entry.file) };
+  $('#sample-source').classList.remove('active');
+  $('#upload').classList.add('active');
+  $('#sample-explorer').hidden = true;
+  $('#scenario').disabled = false;
+  $('#profile-data').disabled = !uploadedFiles.length || uploadedFiles.some((entry) => entry.error) || profiling;
+  $('#clear-files').disabled = !uploadedFiles.length || profiling;
+  $('#active-source').innerHTML = `${icon('file')}${escapeHtml(currentDataset.fileName)}`;
+  $('#upload-backend-note').hidden = false;
+  renderFileList();
+  const firstPreview = uploadedFiles.find((entry) => entry.preview)?.preview;
+  if (firstPreview && uploadedFiles.length === 1) renderDatasetPreview(firstPreview);
+  else $('#dataset-preview').hidden = true;
+  resetAnalysisView();
+  setAnalyzing(false);
+  const errors = uploadedFiles.filter((entry) => entry.error);
+  if (errors.length) {
+    $('#upload-error').textContent = `${errors.length} file${errors.length === 1 ? '' : 's'} need attention before profiling.`;
     $('#upload-error').hidden = false;
+  } else showToast(`${uploadedFiles.length} CSV file${uploadedFiles.length === 1 ? '' : 's'} ready to profile.`);
+}
+
+async function profileUploadedData() {
+  if (!uploadedFiles.length || uploadedFiles.some((entry) => entry.error) || profiling) return;
+  profiling = true;
+  $('#profile-data').disabled = true;
+  $('#clear-files').disabled = true;
+  $('#profile-data').innerHTML = `${icon('clock')}<span>Profiling…</span>`;
+  $('#profile-status').textContent = 'Profiling uploaded data locally…';
+  $('#profile-status').hidden = false;
+  try {
+    profileResult = await profileFiles(uploadedFiles.map((entry) => entry.file), appConfig.limits);
+    currentDataset = { ...currentDataset, kind: 'csv', datasetId: profileResult.datasetId, files: uploadedFiles.map((entry) => entry.file), profile: profileResult };
+    renderProfile(profileResult);
+    $('#profile-status').textContent = profileResult.status === 'error' ? 'Profiling failed. Review the errors and retry.' : `Profiling finished with ${profileResult.summary.warningCount} warning${profileResult.summary.warningCount === 1 ? '' : 's'}.`;
+    $('#profile-status').className = `profile-status ${profileResult.status}`;
+    if (profileResult.status !== 'error') showToast('Profile ready. You can now ask a question.');
+  } catch (error) {
+    profileResult = null;
+    renderProfile({ status: 'error', files: [], summary: { fileCount: uploadedFiles.length, totalRows: 0, totalColumns: 0, warningCount: 0, errorCount: 1 }, errors: [{ message: error.message }], aiContext: null });
+    $('#profile-status').textContent = `Profiling failed: ${error.message}`;
+    $('#profile-status').className = 'profile-status error';
+  } finally {
+    profiling = false;
+    $('#profile-data').disabled = !uploadedFiles.length || uploadedFiles.some((entry) => entry.error);
+    $('#profile-data').innerHTML = `${icon('flask')}<span>${profileResult?.status === 'error' ? 'Retry profiling' : 'Profile data'}</span>`;
+    $('#clear-files').disabled = !uploadedFiles.length;
+    setAnalyzing(false);
   }
 }
 
 $('#sample-source').addEventListener('click', restoreSample);
-$('#dataset-preview').addEventListener('click', (event) => {
-  if (event.target.closest('[data-remove-dataset]')) {
-    restoreSample();
-    showToast('Sample retail restored.');
+$('#profile-data').addEventListener('click', profileUploadedData);
+$('#clear-files').addEventListener('click', () => {
+  setNoUploadedDataset();
+  $('#dataset-upload').value = '';
+  showToast('All uploaded files cleared.');
+});
+$('#uploaded-files').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-remove-file]');
+  if (!button || profiling) return;
+  uploadedFiles = uploadedFiles.filter((entry) => entry.id !== button.dataset.removeFile);
+  if (!uploadedFiles.length) {
+    setNoUploadedDataset();
+    return;
   }
+  profileResult = null;
+  currentDataset = { kind: 'csv', fileName: uploadedFiles.length === 1 ? uploadedFiles[0].file.name : `${uploadedFiles.length} CSV files`, files: uploadedFiles.filter((entry) => !entry.error).map((entry) => entry.file) };
+  renderFileList();
+  const firstPreview = uploadedFiles.find((entry) => entry.preview)?.preview;
+  if (firstPreview && uploadedFiles.length === 1) renderDatasetPreview(firstPreview);
+  else $('#dataset-preview').hidden = true;
+  $('#profile-panel').hidden = true;
+  $('#profile-data').disabled = uploadedFiles.some((entry) => entry.error);
+  $('#clear-files').disabled = false;
+  resetAnalysisView();
+  setAnalyzing(false);
+  showToast('File removed. Profile the remaining files when ready.');
+});
+$('#profile-panel').addEventListener('click', (event) => {
+  if (event.target.closest('[data-retry-profile]')) profileUploadedData();
+});
+$('#dataset-preview').addEventListener('click', (event) => {
+  if (event.target.closest('[data-remove-dataset]')) setNoUploadedDataset();
 });
 $('#dropzone').addEventListener('click', () => $('#dataset-upload').click());
 $('#dropzone').addEventListener('keydown', (event) => {
@@ -204,7 +361,7 @@ $('#dropzone').addEventListener('keydown', (event) => {
     $('#dataset-upload').click();
   }
 });
-$('#dataset-upload').addEventListener('change', (event) => handleDatasetFile(event.target.files[0]));
+$('#dataset-upload').addEventListener('change', (event) => handleDatasetFiles(event.target.files));
 for (const eventName of ['dragenter', 'dragover']) $('#dropzone').addEventListener(eventName, (event) => {
   event.preventDefault();
   $('#upload').classList.add('drag-over');
@@ -213,14 +370,16 @@ for (const eventName of ['dragleave', 'drop']) $('#dropzone').addEventListener(e
   event.preventDefault();
   $('#upload').classList.remove('drag-over');
 });
-$('#dropzone').addEventListener('drop', (event) => handleDatasetFile(event.dataTransfer.files[0]));
+$('#dropzone').addEventListener('drop', (event) => handleDatasetFiles(event.dataTransfer.files));
 $('#sqlite-toggle').addEventListener('click', () => {
   uploadKind = uploadKind === 'csv' ? 'sqlite' : 'csv';
   $('#dataset-upload').accept = uploadKind === 'csv' ? '.csv,text/csv' : '.db,.sqlite';
+  $('#dataset-upload').multiple = uploadKind === 'csv';
   $('#dataset-upload').value = '';
-  $('#dropzone-title').innerHTML = uploadKind === 'csv' ? 'Drag & drop your .csv file here <span>or browse</span>' : 'Choose your .db or .sqlite file <span>or browse</span>';
+  $('#dropzone-title').innerHTML = uploadKind === 'csv' ? 'Drag & drop your .csv files here <span>or browse</span>' : 'Choose your .db or .sqlite file <span>or browse</span>';
   $('#sqlite-toggle').textContent = uploadKind === 'csv' ? 'Use a SQLite file instead' : 'Use a CSV file instead';
   $('#dropzone').setAttribute('aria-label', uploadKind === 'csv' ? 'Upload a CSV dataset' : 'Select a SQLite database');
+  if (uploadKind === 'sqlite') showToast('SQLite metadata selection remains read-only; CSV profiling is the active workflow.');
 });
 
 function renderPipeline() {
@@ -262,14 +421,15 @@ function renderChart(result) {
 function renderResult(result) {
   const isError = result.status === 'error';
   const isClarification = result.status === 'clarification_needed';
+  const isMockProfile = result.meta?.mode === 'mock' && result.meta?.aiContextReceived;
   const code = result.meta.code;
-  const title = isClarification ? 'Clarification needed' : code === 'unsafe_sql' ? 'Unsafe SQL blocked' : code === 'model_offline' ? 'Model unavailable' : isError ? 'Analysis failed' : result.rowCount === 0 ? 'Query completed · zero rows' : 'Verified answer';
-  const subtitle = isClarification ? 'No SQL generated or executed' : isError ? result.verification.message : 'Evidence-backed response';
+  const title = isClarification ? 'Clarification needed' : code === 'unsafe_sql' ? 'Unsafe SQL blocked' : code === 'model_offline' ? 'Model unavailable' : isError ? 'Analysis failed' : isMockProfile ? 'Mock analysis preview' : result.rowCount === 0 ? 'Query completed · zero rows' : 'Verified answer';
+  const subtitle = isClarification ? 'No SQL generated or executed' : isError ? result.verification.message : isMockProfile ? 'Profile context received · live AI unavailable' : 'Evidence-backed response';
   const state = isError ? 'error' : isClarification ? 'clarification' : 'success';
-  const badge = isClarification ? 'Question required' : isError ? 'Not verified' : `${icon('shield')}Verified`;
+  const badge = isClarification ? 'Question required' : isError || isMockProfile ? 'Mock only' : `${icon('shield')}Verified`;
   const checks = result.verification.checks?.length ? `<div class="verification-checks">${result.verification.checks.map((check) => `<span class="verification-check">${icon('check')}${escapeHtml(check)}</span>`).join('')}</div>` : '';
   const warnings = result.warnings.length ? `<div class="warning-list">${result.warnings.map((warning) => `<span class="warning-item">${icon('warning')}${escapeHtml(warning)}</span>`).join('')}</div>` : '';
-  $('#analysis-result').innerHTML = `<div class="result-stack"><section class="result-card ${state}"><div class="result-card-header"><div class="result-card-title"><span>${icon(isClarification ? 'help' : isError ? 'warning' : 'check')}</span><div><h3>${title}</h3><small>${escapeHtml(subtitle)}</small></div></div><span class="verified-pill">${badge}</span></div><div class="result-card-body"><p class="answer-text">${escapeHtml(result.answer)}</p></div></section><section class="result-card ${state}"><div class="result-card-header"><div class="result-card-title"><span>${icon(isError || isClarification ? 'warning' : 'shield')}</span><div><h3>Verification & limitations</h3><small>Status is separate from visual styling</small></div></div><span class="mock-result-label">Mock backend</span></div><div class="result-card-body"><p class="verification-message">${escapeHtml(result.verification.message)}</p>${checks}${warnings}</div></section>${renderSql(result)}${result.status === 'success' ? renderTable(result) : ''}${result.status === 'success' ? renderChart(result) : ''}</div>`;
+  $('#analysis-result').innerHTML = `<div class="result-stack"><section class="result-card ${state}"><div class="result-card-header"><div class="result-card-title"><span>${icon(isClarification ? 'help' : isError || isMockProfile ? 'warning' : 'check')}</span><div><h3>${title}</h3><small>${escapeHtml(subtitle)}</small></div></div><span class="verified-pill">${badge}</span></div><div class="result-card-body"><p class="answer-text">${escapeHtml(result.answer)}</p></div></section><section class="result-card ${state}"><div class="result-card-header"><div class="result-card-title"><span>${icon(isError || isClarification || isMockProfile ? 'warning' : 'shield')}</span><div><h3>Verification & limitations</h3><small>Status is separate from visual styling</small></div></div><span class="mock-result-label">${isMockProfile ? 'Mock profile-context provider' : 'Mock backend'}</span></div><div class="result-card-body"><p class="verification-message">${escapeHtml(result.verification.message)}</p>${checks}${warnings}</div></section>${renderSql(result)}${result.status === 'success' ? renderTable(result) : ''}${result.status === 'success' ? renderChart(result) : ''}</div>`;
 }
 
 function renderResponseError(error) {
@@ -281,16 +441,20 @@ function renderResponseError(error) {
 
 function setAnalyzing(analyzing) {
   const button = $('#analyze-button');
-  button.disabled = analyzing || !canAnalyzeDataset(currentDataset, appConfig.features.liveBackend);
+  button.disabled = analyzing || !currentDataset || !canAnalyzeDataset(currentDataset, appConfig.features.liveBackend, profileResult);
   button.innerHTML = analyzing ? `${icon('clock')}<span>Analyzing…</span>` : `${icon('spark')}<span>Analyze question</span>${icon('arrow')}`;
 }
 
 $('#question-form').addEventListener('submit', async (event) => {
   event.preventDefault();
+  if (!currentDataset) {
+    showToast('Select or upload a dataset before analyzing.');
+    return;
+  }
   const { databaseConfig, datasetOptions } = createDatasetRequest(currentDataset);
-  const requestOptions = { scenario: $('#scenario').value, dataset: datasetOptions };
-  if (!canAnalyzeDataset(currentDataset, appConfig.features.liveBackend)) {
-    showToast('Analysis of uploaded CSVs is available once the backend is connected.');
+  const requestOptions = { scenario: $('#scenario').value, dataset: datasetOptions, aiContext: profileResult?.aiContext };
+  if (!canAnalyzeDataset(currentDataset, appConfig.features.liveBackend, profileResult)) {
+    showToast(profileResult?.status === 'error' ? 'Fix profiling errors before analyzing.' : 'Profile the uploaded data before analyzing.');
     return;
   }
   const question = $('#question').value;
@@ -422,7 +586,7 @@ function renderDeveloper() {
   } else if (developerTab === 'logs') {
     const logs = logger.getLogs().reverse();
     content.innerHTML = logs.length ? `<div class="log-list">${logs.map((log) => `<article class="log-entry"><div><span class="log-level">${log.level}</span><span>${escapeHtml(log.stage)}</span><span>request ${log.requestId ?? '—'}</span><span>${log.durationMs ?? '—'} ms</span></div><p>${escapeHtml(log.message)}</p><small>${log.timestamp}</small></article>`).join('')}</div>` : '<div class="developer-empty">Structured JSON logs will appear here.</div>';
-  } else content.innerHTML = `<pre>${syntaxHighlight({ app: appConfig, theme: themeTokens, activeDataset: currentDataset.kind === 'sample' ? currentDataset : createDatasetRequest(currentDataset) })}</pre>`;
+  } else content.innerHTML = `<pre>${syntaxHighlight({ app: appConfig, theme: themeTokens, activeDataset: currentDataset ? (currentDataset.kind === 'sample' ? currentDataset : createDatasetRequest(currentDataset)) : null })}</pre>`;
 }
 
 function openDeveloper() {
@@ -447,7 +611,7 @@ $$('.developer-tabs button').forEach((button) => button.addEventListener('click'
   renderDeveloper();
 }));
 $('#download-debug').addEventListener('click', () => {
-  const { databaseConfig, datasetOptions } = createDatasetRequest(currentDataset);
+  const { databaseConfig, datasetOptions } = currentDataset ? createDatasetRequest(currentDataset) : { databaseConfig: null, datasetOptions: null };
   downloadJson('askbase-debug-bundle.json', {
     generatedAt: new Date().toISOString(),
     app: appConfig,
