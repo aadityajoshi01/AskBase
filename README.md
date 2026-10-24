@@ -12,6 +12,27 @@ grounded in verified SQL execution, with result tables, charts and transparent d
 | `agent3_sql-safety/` | Agent 3 — SQL Safety, Execution & Verification | Validation, restricted execution, result verification |
 | `agent4_ui-evaluation/` | Agent 4 — UI, Evaluation & Integration | App UI, orchestration, evaluation, integration |
 
+## Quickstart (all agents)
+
+```bash
+# one-time setup (Python 3.12+; Windows: use `py -3.12` if `python` is missing)
+# ⚠ the repo URL currently ends with a literal "." — keep it or GitHub 404s.
+# On Windows, clone into an explicit dir name (folders can't end in "."):
+git clone <this-repo-url-with-trailing-dot> repo && cd repo
+python -m venv .venv
+.venv/Scripts/pip install -r requirements.txt        # Windows
+# .venv/bin/pip install -r requirements.txt          # macOS/Linux
+
+# run every agent's tests (what CI runs)
+.venv/Scripts/pytest -q */tests
+```
+
+The LLM server (Agent 1 work) is Qwen3-8B via llamafile — start it with `start_server.bat`,
+stop with `stop_server.bat`. No live model is needed for tests; they are fully mocked.
+
+Before coding against another agent's module, check [`INTEGRATION_CONTRACT.md`](INTEGRATION_CONTRACT.md)
+(Gate 2) — it fixes the interfaces, statuses and response envelope everyone must conform to.
+
 ## Reference
 
 Full specification: [`AskBase_AI_Agent_Work_Reports.pdf`](AskBase_AI_Agent_Work_Reports.pdf)

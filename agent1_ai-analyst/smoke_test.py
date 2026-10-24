@@ -8,15 +8,21 @@ generate_sql() path and one synthesize_answer() call, printing actual outputs
 and wall-clock latencies. Nothing here is committed as a "result" until it
 runs against the live model; failures are recorded as failures.
 """
+import csv
 import json
 import sys
 import time
+from datetime import datetime, timezone
 
 import requests
 
 from backend import llm_client
 from backend.agent import synthesize_answer
 from backend.sql_generator import generate_sql
+
+RESULTS_CSV = "smoke_results.csv"
+CSV_FIELDS = ["timestamp", "run_id", "kind", "label", "question",
+              "status", "latency_ms", "error_type"]
 
 BASE_URL = llm_client.get_config()["base_url"]
 
@@ -66,7 +72,27 @@ def probe_models():
     return ids
 
 
+def log_row(run_id, kind, label, question, out, ms):
+    """Append one measurement to RESULTS_CSV so before/after runs stay comparable."""
+    error = out.get("error") or {}
+    row = {
+        "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "run_id": run_id, "kind": kind, "label": label, "question": question,
+        "status": out.get("status"), "latency_ms": ms,
+        "error_type": error.get("type", ""),
+    }
+    try:
+        with open(RESULTS_CSV, "a", newline="") as fh:
+            writer = csv.DictWriter(fh, fieldnames=CSV_FIELDS)
+            if fh.tell() == 0:
+                writer.writeheader()
+            writer.writerow(row)
+    except OSError as exc:
+        print(f"[warn] could not append to {RESULTS_CSV}: {exc}")
+
+
 def main():
+    run_id = datetime.now(timezone.utc).strftime("%Y%mdT%H%M%SZ")
     try:
         probe_models()
     except Exception as exc:
@@ -79,6 +105,7 @@ def main():
         out = generate_sql(question, SCHEMA)
         ms = int((time.perf_counter() - t0) * 1000)
         results.append((label, question, out, ms))
+        log_row(run_id, "generate_sql", label, question, out, ms)
         print(f"\n[{label}] {question}\n  status={out['status']} ({ms} ms)")
         print(f"  sql={out['sql']}")
         if out["assumptions"]:
@@ -93,6 +120,7 @@ def main():
         t0 = time.perf_counter()
         syn = synthesize_answer(first_ok[1], first_ok[2]["sql"], FAKE_RESULT)
         ms = int((time.perf_counter() - t0) * 1000)
+        log_row(run_id, "synthesize_answer", "synthesis-probe", first_ok[1], syn, ms)
         print(f"\n[synthesize] status={syn['status']} ({ms} ms)\n  answer={syn['answer']}")
     else:
         print("\n[synthesize] SKIPPED — no successful generation to synthesize")
