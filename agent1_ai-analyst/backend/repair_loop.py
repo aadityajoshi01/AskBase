@@ -14,6 +14,7 @@ from __future__ import annotations
 from backend import sql_generator
 
 MAX_REPAIR_ATTEMPTS = 2
+REPAIRABLE_ERROR_TYPES = frozenset({"invented_identifier", "empty"})
 
 
 def generate_validated_sql(question: str, schema: dict, validate_sql,
@@ -36,10 +37,11 @@ def generate_validated_sql(question: str, schema: dict, validate_sql,
             return _final(last_generation, attempt, validated=False, status="clarification_needed")
 
         if status != "ok":
-            # invented_identifier is a repairable SQL error (report §3): retry while
-            # attempts remain. Transport/malformed failures are not repairable.
+            # Repairable SQL errors (INTEGRATION_CONTRACT.md §5.3): invented identifiers
+            # and intermittent empty completions (live evidence, RESULTS.md finding 1).
+            # Transport/malformed failures are not repairable.
             error = last_generation.get("error") or {}
-            if (error.get("type") == "invented_identifier" and attempt <= max_repairs):
+            if (error.get("type") in REPAIRABLE_ERROR_TYPES and attempt <= max_repairs):
                 prior_error = error
                 continue
             return _final(last_generation, attempt, validated=False, status="error")

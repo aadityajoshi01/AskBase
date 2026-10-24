@@ -104,3 +104,38 @@ def test_default_generate_is_sql_generator(monkeypatch):
     v = SpyValidator([VALID])
     out = generate_validated_sql("q", SCHEMA, v)
     assert out["status"] == "ok"
+
+
+# ---- P2(a): empty completions are transiently retryable (live evidence) ----
+
+def test_empty_error_is_retried_then_succeeds():
+    g = SpyGenerate([gen(status="error", sql=None,
+                         error={"type": "empty", "message": "LLM returned an empty completion"}),
+                     gen(sql="SELECT total FROM orders")])
+    v = SpyValidator([VALID])
+    out = generate_validated_sql("q", SCHEMA, v, generate=g)
+    assert out["status"] == "ok" and out["attempts"] == 2
+    assert g.calls[1]["type"] == "empty"  # retry feedback carries the cause
+
+
+def test_empty_retry_shares_budget_with_repairs():
+    # empty, validator reject, empty again -> 4th attempt never happens
+    g = SpyGenerate([
+        gen(status="error", sql=None, error={"type": "empty", "message": "empty"}),
+        gen(sql="SELECT bad FROM orders"),
+        gen(status="error", sql=None, error={"type": "empty", "message": "empty"}),
+        gen(sql="SELECT never = reached"),
+    ])
+    v = SpyValidator([invalid("bad column")])
+    out = generate_validated_sql("q", SCHEMA, v, generate=g)
+    assert out["status"] == "error" and len(g.calls) == 3
+    assert out["error"]["type"] == "empty"  # last real cause survives
+
+
+def test_timeout_still_fails_fast():
+    g = SpyGenerate([gen(status="error", sql=None,
+                         error={"type": "timeout", "message": "exceeded"})])
+    v = SpyValidator([])
+    out = generate_validated_sql("q", SCHEMA, v, generate=g)
+    assert out["status"] == "error" and out["error"]["type"] == "timeout"
+    assert len(g.calls) == 1 and v.seen_sql == []
