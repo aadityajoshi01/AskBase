@@ -10,6 +10,8 @@
   },
   "limits": {
     "maxUploadBytes": 10485760,
+    "maxRows": 100000,
+    "maxColumns": 100,
     "previewRows": 6,
     "maxResultRows": 100
   },

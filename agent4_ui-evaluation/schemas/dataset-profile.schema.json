@@ -5,8 +5,12 @@
   "properties": {
     "fileName": { "type": "string" },
     "size": { "type": "integer" },
-    "delimiter": { "type": "string", "enum": [",", ";", "\t"] },
+    "sizeBytes": { "type": "integer" },
+    "delimiter": { "type": ["string", "null"], "enum": [",", ";", "\t", null] },
     "rowCount": { "type": "integer" },
+    "columnCount": { "type": "integer" },
+    "status": { "type": "string", "enum": ["success", "warning", "error"] },
+    "duplicateRowCount": { "type": "integer" },
     "columns": {
       "type": "array",
       "items": {
@@ -15,9 +19,22 @@
         "properties": {
           "name": { "type": "string" },
           "type": { "type": "string", "enum": ["NUMBER", "DATE", "TEXT"] },
-          "nullCount": { "type": "integer" }
+          "logicalType": { "type": "string", "enum": ["string", "integer", "decimal", "boolean", "date", "datetime", "mixed", "unknown"] },
+          "nullCount": { "type": "integer" },
+          "nullPercentage": { "type": "number" },
+          "distinctCount": { "type": "integer" },
+          "duplicateCount": { "type": "integer" },
+          "invalidCount": { "type": "integer" },
+          "sampleValues": { "type": "array" },
+          "statistics": { "type": "object" },
+          "potentialIdentifier": { "type": "boolean" },
+          "potentialSensitiveData": { "type": "boolean" },
+          "warnings": { "type": "array" }
         }
       }
-    }
+    },
+    "warnings": { "type": "array" },
+    "errors": { "type": "array" },
+    "profile": { "type": "object" }
   }
 }

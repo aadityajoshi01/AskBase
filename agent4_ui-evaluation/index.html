@@ -77,17 +77,21 @@
           <button class="source-card active" id="sample-source"><span class="source-icon"><svg><use href="#i-database"/></svg></span><span class="source-copy"><small>SAMPLE DATABASE</small><strong>Sample retail</strong><span>4 tables · SQLite · ready to explore</span></span><span class="source-status"><i></i>Read-only</span><span class="source-check"><svg><use href="#i-check"/></svg></span></button>
           <section class="source-card upload-source" id="upload">
             <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload a CSV dataset">
-              <input type="file" id="dataset-upload" accept=".csv,text/csv" hidden>
+              <input type="file" id="dataset-upload" accept=".csv,text/csv" multiple hidden>
               <span class="source-icon"><svg><use href="#i-upload"/></svg></span>
               <span class="source-copy"><small>YOUR DATA</small><strong id="dropzone-title">Drag & drop your .csv file here <span>or browse</span></strong><span>CSV recommended · max 10 MB · first row must be headers</span></span>
               <span class="upload-arrow"><svg><use href="#i-arrow"/></svg></span>
             </div>
             <div class="upload-links"><button id="sqlite-toggle">Use a SQLite file instead</button><span>·</span><a href="tests/fixtures/products.csv" download>Download sample CSV</a><span>·</span><span>Processed locally</span></div>
+            <div class="upload-actions"><button class="dark-pill" id="profile-data" type="button" disabled><svg><use href="#i-flask"/></svg><span>Profile data</span></button><button class="light-pill" id="clear-files" type="button" disabled>Clear all files</button></div>
+            <p class="profile-status" id="profile-status" role="status" hidden></p>
             <p class="inline-error" id="upload-error" role="alert" hidden></p>
           </section>
         </div>
 
+        <section id="uploaded-files" class="uploaded-files" hidden aria-live="polite"></section>
         <section id="dataset-preview" class="dataset-preview" hidden aria-live="polite"></section>
+        <section id="profile-panel" class="profile-panel" hidden aria-live="polite"></section>
 
         <div class="explore-grid" id="sample-explorer">
           <section class="soft-card schema-card"><div class="card-heading"><div><span class="mini-icon"><svg><use href="#i-table"/></svg></span><h3>Explore the schema</h3></div><span>4 tables</span></div><div id="sample-schema"></div></section>
@@ -99,7 +103,7 @@
           <textarea id="question" rows="3" placeholder="Ask anything about the active dataset…">Which product categories generated the most revenue?</textarea>
           <div class="example-chips" id="example-chips"></div>
           <div class="question-actions"><div class="scenario-control"><label for="scenario">Demo scenario</label><select id="scenario"></select></div><button class="dark-pill analyze-button" id="analyze-button" type="submit"><svg><use href="#i-spark"/></svg><span>Analyze question</span><svg><use href="#i-arrow"/></svg></button></div>
-          <p class="upload-backend-note" id="upload-backend-note" hidden><svg><use href="#i-warning"/></svg>Analysis of uploaded CSVs is available once the backend is connected.</p>
+          <p class="upload-backend-note" id="upload-backend-note" hidden><svg><use href="#i-warning"/></svg>Uploaded data uses the local profile context with the mock analysis provider. No live AI or SQL execution is performed.</p>
         </form>
 
         <ol class="pipeline-stepper" id="pipeline-stepper" aria-label="Analysis pipeline" hidden></ol>
