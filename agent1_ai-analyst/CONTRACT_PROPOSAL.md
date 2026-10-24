@@ -44,4 +44,5 @@ synthesize_answer(question: str, sql: str, result: dict) -> dict
 ## Open questions for Gate 2
 1. Exact shape of Agent 2's `schema` dict (table/column/type/PK/FK keys).
 2. Does the repair loop live in Agent 1 or in Agent 4's orchestrator? (Proposal: Agent 4 drives it; Agent 1 exposes the two interfaces above only.)
+   **RESOLVED 2026-10-24 (Part 7):** Agent 1 ships `backend/repair_loop.py::generate_validated_sql(question, schema, validate_sql, ...)` implementing the contracted semantics (1 initial + ≤2 repairs, same injected validator for every candidate). Agent 4 may call it or drive the loop itself — behavior is identical either way.
 3. Clarification round-trip: how UI re-submits a question with the user's clarification appended.

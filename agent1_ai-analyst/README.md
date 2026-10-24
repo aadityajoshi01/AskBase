@@ -17,8 +17,10 @@ See `../AskBase_AI_Agent_Work_Reports.pdf` §3 for the full spec.
 agent1_ai-analyst/
   backend/llm_client.py      # env-configured OpenAI-compatible client, typed errors
   backend/sql_generator.py   # schema-aware generate_sql() + identifier guard
+  backend/agent.py           # synthesize_answer() grounded in real results
+  backend/repair_loop.py     # bounded repair: every candidate through the same injected validator
   AUDIT.md / ENDPOINT.md / CONTRACT_PROPOSAL.md
-  tests/                     # 31 mocked tests
+  tests/                     # 55 mocked tests
 ```
 
 ## Running tests (no model or GPU needed)
