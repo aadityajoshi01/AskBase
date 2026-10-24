@@ -71,6 +71,7 @@ The UI does not implement SQL validation, query execution, profiling, or answer 
 | `dataset.js` | CSV parsing, delimiter detection, validation, schema inference, and request metadata |
 | `evaluation.js` | Fixture-backed metrics and scenario filters |
 | `server.mjs` | Static server with JSON content types, no-store cache headers, and traversal protection |
+| `start.bat` / `stop.bat` | Windows launcher, browser opening, and PID-scoped server shutdown |
 | `config/` | App, theme, scenarios, examples, sample schema, and evaluation fixtures |
 | `schemas/` | Analysis response, dataset profile, and evaluation report contracts |
 | `lib/validate.js` | Dependency-free nested schema validation |
@@ -117,6 +118,7 @@ Every response is checked against `schemas/analysis-response.schema.json` before
 - Original 14 tests remain passing
 - Browser checks cover verified analysis, five pipeline stages, Developer telemetry, CSV preview, disabled uploaded-data analysis, evaluation filtering, and four Docs endpoint cards
 - No browser console errors were observed
+- Exact 1440px and 390px screenshots for the hero, verified workspace, CSV preview, evaluation, and Developer panel are in `screenshots/`
 - Responsive layouts include 44px mobile tap targets and reduced-motion support
 
 ## Changelog

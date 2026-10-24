@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="AskBase — plain-English questions, transparent SQL, and verified evidence.">
   <title>AskBase — Ask your data.</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%230e0e0e'/%3E%3Cellipse cx='32' cy='20' rx='18' ry='8' fill='%23f26a1b'/%3E%3Cpath d='M14 20v24c0 4 8 8 18 8s18-4 18-8V20M14 32c0 4 8 8 18 8s18-4 18-8' fill='none' stroke='%23f26a1b' stroke-width='5'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;550;600;650;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -38,7 +39,7 @@
   </svg>
 
   <header class="topbar">
-    <a class="brand-chip" href="#home" data-scroll="home" aria-label="AskBase home"><span class="brand-icon"><svg><use href="#i-database"/></svg></span><strong>AskBase</strong><span class="brand-beta">BETA</span></a>
+    <a class="brand-chip" href="#home" data-scroll="home" aria-label="AskBase home"><span class="brand-icon"><svg><use href="#i-database"/></svg></span><strong>AskBase</strong></a>
     <nav class="nav-pill" aria-label="Main navigation">
       <button class="active" data-page="analyze" aria-current="page">Analyze</button>
       <button data-page="analyze" data-scroll="upload">Upload</button>
@@ -51,14 +52,13 @@
   <main>
     <section id="analyze-page" class="page">
       <section class="hero" id="home">
-        <a class="announcement" href="#workspace" data-scroll="workspace"><span></span>Demo build · mock analysis<svg><use href="#i-arrow"/></svg></a>
         <div class="hero-grid">
           <div class="hero-copy">
             <h1>Ask your data.</h1>
             <p class="hero-subtitle">Plain-English questions. <em>Verified SQL answers.</em></p>
             <p class="hero-tagline">Less guessing, answers you can trust.</p>
             <p class="hero-description">Ask questions about your database or CSV, see the generated SQL, and check every result with built-in verification.</p>
-            <div class="hero-actions"><button class="dark-pill large" data-scroll="workspace">Start analyzing<svg><use href="#i-arrow"/></svg></button><button class="light-pill large" data-scroll="upload">Upload a CSV<svg><use href="#i-upload"/></svg></button></div>
+            <div class="hero-actions"><button class="light-pill large" id="hero-upload" data-scroll="upload">Upload a CSV<svg><use href="#i-upload"/></svg></button><button class="dark-pill large" data-scroll="workspace">Start analyzing<svg><use href="#i-arrow"/></svg></button></div>
             <div class="command-block"><code id="command-question">$ Which product category had the highest revenue last quarter?</code><button id="use-command">COPY</button></div>
             <div class="hero-proof"><span><svg><use href="#i-shield"/></svg>Read-only by design</span><span><svg><use href="#i-check"/></svg>Evidence included</span><span><svg><use href="#i-file"/></svg>CSV friendly</span></div>
           </div>
