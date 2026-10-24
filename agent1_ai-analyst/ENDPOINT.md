@@ -8,7 +8,7 @@ Launch: `C:\Users\Aaditya Joshi\Desktop\OfflineAI\start.bat` (or equivalent CLI)
 | Variable | Default | Meaning |
 |---|---|---|
 | `LLM_BASE_URL` | `http://127.0.0.1:8080/v1` | OpenAI-compatible base URL |
-| `LLM_MODEL` | `Qwen3-8B-Q4_K_M` | Model id (confirm against `/v1/models` at startup) |
+| `LLM_MODEL` | `Qwen3-8B-Q4_K_M.gguf` | Verified live 2026-10-24 against `/v1/models` (llamafile returns the gguf filename as id; requests accept it) |
 | `LLM_API_KEY` | *(empty — not required locally)* | Only if a proxy adds auth |
 | `LLM_TIMEOUT_S` | `120` | Per-request timeout; 8B on RTX 3050 is slow for long prompts |
 | `LLM_MAX_TOKENS` | `1024` | Generation cap (server context is 4096 total) |

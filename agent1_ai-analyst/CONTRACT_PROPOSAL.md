@@ -46,3 +46,4 @@ synthesize_answer(question: str, sql: str, result: dict) -> dict
 2. Does the repair loop live in Agent 1 or in Agent 4's orchestrator? (Proposal: Agent 4 drives it; Agent 1 exposes the two interfaces above only.)
    **RESOLVED 2026-10-24 (Part 7):** Agent 1 ships `backend/repair_loop.py::generate_validated_sql(question, schema, validate_sql, ...)` implementing the contracted semantics (1 initial + ≤2 repairs, same injected validator for every candidate). Agent 4 may call it or drive the loop itself — behavior is identical either way.
 3. Clarification round-trip: how UI re-submits a question with the user's clarification appended.
+4. NEW (live evidence, RESULTS.md finding 1): should `error/empty` be transiently retryable in the repair loop? Qwen3-8B produced intermittent empty completions (1 of 2 on one question); currently only `invented_identifier` auto-repairs. Agent 1 recommends yes, with the ≤2 budget shared across all retryable causes.
