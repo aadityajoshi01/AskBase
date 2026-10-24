@@ -233,6 +233,19 @@ def test_rejects_dangerous_function_behind_alias():
     assert codes(validate_sql("SELECT sleep(1) AS s")) == "forbidden_function"
 
 
+@pytest.mark.parametrize("sql", [
+    "SELECT file_read('/tmp/x')",
+    "SELECT file_write('/tmp/x', 'data')",
+    "SELECT FILE_READ('/etc/passwd')",
+    "SELECT file_read('C:\\Windows\\win.ini') AS leaked",
+    "SELECT (SELECT file_read('/tmp/x'))",
+    "WITH t AS (SELECT file_write('/tmp/x', 'd') AS w) SELECT w FROM t",
+])
+def test_rejects_sqlite_fileio_functions(sql):
+    """SQLite's fileio extension names are not covered by the denylist prefixes."""
+    assert codes(validate_sql(sql)) == "forbidden_function"
+
+
 # --- multiple statements and malformed input ----------------------------------
 
 

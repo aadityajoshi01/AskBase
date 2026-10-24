@@ -49,7 +49,7 @@ _BLOCKED_NODE_NAMES = (
 # connection so these cannot be reached even if a name slips through.
 _BLOCKED_FUNCTIONS = {
     "load_extension", "enable_load_extension", "sqlite_exec", "eval", "system",
-    "shell", "execute_shell", "readfile", "writefile", "dump",
+    "shell", "execute_shell", "readfile", "writefile", "file_read", "file_write", "dump",
     "load_file", "loadfile", "into_outfile", "sleep", "benchmark", "get_lock",
     "release_lock", "is_free_lock", "is_used_lock", "master_query", "sys_exec",
     "sys_eval", "xp_cmdshell", "sp_executesql", "openrowset", "openquery",
