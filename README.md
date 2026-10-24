@@ -23,8 +23,9 @@ python -m venv .venv
 .venv/Scripts/pip install -r requirements.txt        # Windows
 # .venv/bin/pip install -r requirements.txt          # macOS/Linux
 
-# run every agent's tests (what CI runs)
-.venv/Scripts/pytest -q */tests
+# run the tests — per agent directory (CI does the same; do not run one
+# repo-wide pytest: agents share top-level package names like `backend/`)
+.venv/Scripts/python.exe -m pytest -q agent1_ai-analyst/tests   # or cd into any agentN dir and run: python -m pytest tests
 ```
 
 The LLM server (Agent 1 work) is Qwen3-8B via llamafile — start it with `start_server.bat`,
