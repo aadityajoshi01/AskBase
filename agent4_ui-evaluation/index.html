@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AskBase — plain-English questions, transparent SQL, and verified evidence.">
+  <title>AskBase — Ask your data.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;550;600;650;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.4 4.6L18 9l-4.6 1.4L12 15l-1.4-4.6L6 9l4.6-1.4L12 3Z"/><path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-6 9c-.7 1.1.1 2.5 1.4 2.5h13.2c1.3 0 2.1-1.4 1.4-2.5l-6-9V3M8 15h8"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.5 8 10 4.6-1.5 8-5 8-10V6l-8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></symbol>
+    <symbol id="i-warning" viewBox="0 0 24 24"><path d="M10.3 4.2 2.6 18a2 2 0 0 0 1.8 3h15.2a2 2 0 0 0 1.8-3L13.7 4.2a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.5 2.5 0 1 1 3.7 2.2c-.8.5-1.3 1-1.3 2.3M12 17h.01"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 14h4l2 3h4l2-3h4"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 2h8l4 4v16H6zM14 2v5h5M9 13h6M9 17h6"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4h6a3 3 0 0 1 3 3v13a3 3 0 0 0-3-3H4zM20 4h-4a3 3 0 0 0-3 3v13a3 3 0 0 1 3-3h4z"/></symbol>
+  </svg>
+
+  <header class="topbar">
+    <a class="brand-chip" href="#home" data-scroll="home" aria-label="AskBase home"><span class="brand-icon"><svg><use href="#i-database"/></svg></span><strong>AskBase</strong><span class="brand-beta">BETA</span></a>
+    <nav class="nav-pill" aria-label="Main navigation">
+      <button class="active" data-page="analyze" aria-current="page">Analyze</button>
+      <button data-page="analyze" data-scroll="upload">Upload</button>
+      <button data-page="evaluation">Evaluation</button>
+      <button data-page="docs">Docs</button>
+    </nav>
+    <button class="dark-pill developer-open" id="developer-open" aria-label="Open developer panel"><svg><use href="#i-code"/></svg><span>Developer</span></button>
+  </header>
+
+  <main>
+    <section id="analyze-page" class="page">
+      <section class="hero" id="home">
+        <a class="announcement" href="#workspace" data-scroll="workspace"><span></span>Demo build · mock analysis<svg><use href="#i-arrow"/></svg></a>
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <h1>Ask your data.</h1>
+            <p class="hero-subtitle">Plain-English questions. <em>Verified SQL answers.</em></p>
+            <p class="hero-tagline">Less guessing, answers you can trust.</p>
+            <p class="hero-description">Ask questions about your database or CSV, see the generated SQL, and check every result with built-in verification.</p>
+            <div class="hero-actions"><button class="dark-pill large" data-scroll="workspace">Start analyzing<svg><use href="#i-arrow"/></svg></button><button class="light-pill large" data-scroll="upload">Upload a CSV<svg><use href="#i-upload"/></svg></button></div>
+            <div class="command-block"><code id="command-question">$ Which product category had the highest revenue last quarter?</code><button id="use-command">COPY</button></div>
+            <div class="hero-proof"><span><svg><use href="#i-shield"/></svg>Read-only by design</span><span><svg><use href="#i-check"/></svg>Evidence included</span><span><svg><use href="#i-file"/></svg>CSV friendly</span></div>
+          </div>
+          <div class="hero-visual" aria-label="Example verified analysis preview">
+            <article class="floating-card preview-answer"><div class="preview-top"><span class="mini-icon"><svg><use href="#i-spark"/></svg></span><span class="verified-pill"><svg><use href="#i-check"/></svg>Verified</span></div><p>Technology led revenue last quarter</p><strong>$48,250</strong><small>↑ 12.4% from the previous quarter</small><div class="mock-label">Illustrative mock result</div></article>
+            <article class="floating-card preview-sql"><div><span></span><span></span><span></span><small>QUERY.SQL</small></div><code><b>SELECT</b> category, SUM(revenue)<br><b>FROM</b> order_items<br><b>GROUP BY</b> category<br><b>ORDER BY</b> revenue <b>DESC</b>;</code></article>
+            <article class="floating-card preview-chart"><div class="preview-top"><strong>Revenue by category</strong><small>4 rows</small></div><div class="mini-bars"><span style="--h:92%"></span><span style="--h:67%"></span><span style="--h:45%"></span><span style="--h:30%"></span></div><div class="mini-labels"><span>Tech</span><span>Home</span><span>Sport</span><span>Books</span></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="workspace section-shell" id="workspace">
+        <div class="section-heading"><div><span class="eyebrow">YOUR ANALYSIS WORKSPACE</span><h2>One question. <em>Every piece of evidence.</em></h2></div><span class="build-pill"><span></span>Mock backend</span></div>
+
+        <div class="source-grid">
+          <button class="source-card active" id="sample-source"><span class="source-icon"><svg><use href="#i-database"/></svg></span><span class="source-copy"><small>SAMPLE DATABASE</small><strong>Sample retail</strong><span>4 tables · SQLite · ready to explore</span></span><span class="source-status"><i></i>Read-only</span><span class="source-check"><svg><use href="#i-check"/></svg></span></button>
+          <section class="source-card upload-source" id="upload">
+            <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload a CSV dataset">
+              <input type="file" id="dataset-upload" accept=".csv,text/csv" hidden>
+              <span class="source-icon"><svg><use href="#i-upload"/></svg></span>
+              <span class="source-copy"><small>YOUR DATA</small><strong id="dropzone-title">Drag & drop your .csv file here <span>or browse</span></strong><span>CSV recommended · max 10 MB · first row must be headers</span></span>
+              <span class="upload-arrow"><svg><use href="#i-arrow"/></svg></span>
+            </div>
+            <div class="upload-links"><button id="sqlite-toggle">Use a SQLite file instead</button><span>·</span><a href="tests/fixtures/products.csv" download>Download sample CSV</a><span>·</span><span>Processed locally</span></div>
+            <p class="inline-error" id="upload-error" role="alert" hidden></p>
+          </section>
+        </div>
+
+        <section id="dataset-preview" class="dataset-preview" hidden aria-live="polite"></section>
+
+        <div class="explore-grid" id="sample-explorer">
+          <section class="soft-card schema-card"><div class="card-heading"><div><span class="mini-icon"><svg><use href="#i-table"/></svg></span><h3>Explore the schema</h3></div><span>4 tables</span></div><div id="sample-schema"></div></section>
+          <section class="soft-card quality-card"><div class="card-heading"><div><span class="mini-icon orange"><svg><use href="#i-warning"/></svg></span><h3>Data quality, out in the open</h3></div><span>3 notes</span></div><p>Useful context before you interpret an answer.</p><div id="quality-warnings" class="quality-warnings"></div><small>No source values are cleaned or changed.</small></section>
+        </div>
+
+        <form class="question-card" id="question-form">
+          <div class="question-top"><label for="question">What would you like to know?</label><span class="active-source" id="active-source"><svg><use href="#i-database"/></svg>Sample retail</span></div>
+          <textarea id="question" rows="3" placeholder="Ask anything about the active dataset…">Which product categories generated the most revenue?</textarea>
+          <div class="example-chips" id="example-chips"></div>
+          <div class="question-actions"><div class="scenario-control"><label for="scenario">Demo scenario</label><select id="scenario"></select></div><button class="dark-pill analyze-button" id="analyze-button" type="submit"><svg><use href="#i-spark"/></svg><span>Analyze question</span><svg><use href="#i-arrow"/></svg></button></div>
+          <p class="upload-backend-note" id="upload-backend-note" hidden><svg><use href="#i-warning"/></svg>Analysis of uploaded CSVs is available once the backend is connected.</p>
+        </form>
+
+        <ol class="pipeline-stepper" id="pipeline-stepper" aria-label="Analysis pipeline" hidden></ol>
+        <div id="analysis-result" class="analysis-result" aria-live="polite"><section class="result-placeholder"><span><svg><use href="#i-chart"/></svg></span><h3>Your evidence stack starts here</h3><p>Ask a question to see the answer, verification, SQL, rows, and chart.</p></section></div>
+      </section>
+    </section>
+
+    <section id="evaluation-page" class="page section-shell page-tab" hidden>
+      <div class="section-heading"><div><span class="eyebrow">QUALITY & RELIABILITY</span><h1>Evaluation, <em>without the hand-waving.</em></h1><p>Explicit denominators. Expected versus observed. No mystery scores.</p></div><button class="dark-pill" id="run-evaluation"><svg><use href="#i-play"/></svg><span>Run evaluation</span></button></div>
+      <div class="fixture-banner"><svg><use href="#i-flask"/></svg><strong>Baseline fixtures, not live measurements.</strong><span id="last-run">13 scenarios · 1 known issue</span></div>
+      <div id="evaluation-metrics" class="metrics-grid"></div>
+      <section class="evaluation-card"><div class="evaluation-card-header"><div><h2>Test scenarios</h2><p>Reproducible checks across the complete workflow.</p></div><button class="light-pill" id="export-results"><svg><use href="#i-download"/></svg>Export JSON</button></div><div class="evaluation-filters"><label class="search-field"><svg><use href="#i-search"/></svg><input id="evaluation-search" type="search" placeholder="Search scenarios" aria-label="Search evaluation scenarios"></label><select id="evaluation-category" aria-label="Filter by category"><option value="all">All categories</option></select><div class="filter-tabs"><button class="active" data-status="all">All</button><button data-status="passed">Passed</button><button data-status="failed">Failed</button></div></div><div class="table-scroll"><table class="evaluation-table"><thead><tr><th>Scenario</th><th>Category</th><th>Expected</th><th>Observed</th><th>Latency</th><th>Result</th></tr></thead><tbody id="evaluation-rows"></tbody></table></div><div class="evaluation-footer" id="evaluation-count"></div></section>
+    </section>
+
+    <section id="docs-page" class="page section-shell page-tab" hidden>
+      <div class="section-heading"><div><span class="eyebrow">INTEGRATION CONTRACT</span><h1>A clear path to <em>the real backend.</em></h1><p>OpenAPI-style endpoint documentation for the four integration boundaries.</p></div><span class="build-pill"><span></span>Proposed contract</span></div>
+      <div class="docs-notice"><svg><use href="#i-book"/></svg><p>These routes document the intended backend contract. They are <strong>not live endpoints</strong> in the mock build.</p><a href="docs/api-contract.json" target="_blank" rel="noopener">View raw JSON<svg><use href="#i-arrow"/></svg></a></div>
+      <div id="endpoint-list" class="endpoint-list"></div>
+    </section>
+  </main>
+
+  <footer class="footer"><a class="brand-chip" href="#home" data-scroll="home"><span class="brand-icon"><svg><use href="#i-database"/></svg></span><strong>AskBase</strong></a><p>Ask clearly. Inspect freely. Trust the evidence.</p><span id="app-version">v2.0.0 · Mock backend</span></footer>
+
+  <div class="drawer-overlay" id="drawer-overlay" hidden></div>
+  <aside class="developer-drawer" id="developer-drawer" aria-label="Developer panel" hidden>
+    <header><div><span class="eyebrow">UNDER THE HOOD</span><h2>Developer</h2></div><button class="icon-button" id="developer-close" aria-label="Close developer panel"><svg><use href="#i-close"/></svg></button></header>
+    <div class="developer-tabs"><button class="active" data-dev-tab="response">Response</button><button data-dev-tab="pipeline">Pipeline</button><button data-dev-tab="logs">Logs</button><button data-dev-tab="config">Config</button></div>
+    <div class="developer-content" id="developer-content"></div>
+    <footer><button class="light-pill" id="download-debug"><svg><use href="#i-download"/></svg>Download debug bundle (JSON)</button><span id="developer-version"></span></footer>
+  </aside>
+  <div class="toast" id="toast" role="status"></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

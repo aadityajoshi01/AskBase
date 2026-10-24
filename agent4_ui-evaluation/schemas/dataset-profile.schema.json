@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["fileName", "size", "delimiter", "rowCount", "columns"],
+  "properties": {
+    "fileName": { "type": "string" },
+    "size": { "type": "integer" },
+    "delimiter": { "type": "string", "enum": [",", ";", "\t"] },
+    "rowCount": { "type": "integer" },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "type", "nullCount"],
+        "properties": {
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["NUMBER", "DATE", "TEXT"] },
+          "nullCount": { "type": "integer" }
+        }
+      }
+    }
+  }
+}

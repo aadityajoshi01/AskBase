@@ -1,0 +1,23 @@
+{
+  "name": "AskBase",
+  "version": "2.0.0",
+  "buildMode": "Mock backend",
+  "features": {
+    "csvUpload": true,
+    "sqliteUpload": true,
+    "evaluationDashboard": true,
+    "liveBackend": false
+  },
+  "limits": {
+    "maxUploadBytes": 10485760,
+    "previewRows": 6,
+    "maxResultRows": 100
+  },
+  "pipelineStages": [
+    { "id": "generateSql", "label": "Generate SQL" },
+    { "id": "validateSql", "label": "Validate SQL" },
+    { "id": "execute", "label": "Execute" },
+    { "id": "verify", "label": "Verify" },
+    { "id": "summarize", "label": "Summarize" }
+  ]
+}

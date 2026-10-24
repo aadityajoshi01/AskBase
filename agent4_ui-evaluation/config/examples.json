@@ -1,0 +1,24 @@
+{
+  "groups": [
+    {
+      "category": "Revenue",
+      "questions": [
+        { "question": "Which product categories generated the most revenue?", "scenario": "success" },
+        { "question": "Show category revenue, including inconsistent labels.", "scenario": "messy" }
+      ]
+    },
+    {
+      "category": "Customers",
+      "questions": [
+        { "question": "Who are the top five customers by total orders?", "scenario": "success" },
+        { "question": "How did revenue change recently?", "scenario": "clarification" }
+      ]
+    },
+    {
+      "category": "Reliability",
+      "questions": [
+        { "question": "Show orders from a period with no matching rows.", "scenario": "empty" }
+      ]
+    }
+  ]
+}

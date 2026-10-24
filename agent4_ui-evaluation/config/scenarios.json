@@ -1,0 +1,123 @@
+{
+  "scenarios": [
+    {
+      "id": "success",
+      "label": "Verified analysis",
+      "response": {
+        "status": "success",
+        "answer": "Technology generated the highest revenue at $48,250, followed by Home & Kitchen at $32,480.",
+        "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price) AS revenue\nFROM order_items oi\nJOIN products p ON p.product_id = oi.product_id\nGROUP BY p.category\nORDER BY revenue DESC;",
+        "columns": ["Category", "Revenue"],
+        "rows": [["Technology", 48250], ["Home & Kitchen", 32480], ["Sports", 18920], ["Books", 12640]],
+        "rowCount": 4,
+        "truncated": false,
+        "warnings": [],
+        "verification": { "passed": true, "message": "Answer matches the executed result set.", "checks": ["SQL executed without errors", "Answer values match returned rows", "Chart uses returned data only"] },
+        "chart": { "type": "bar", "x": "Category", "y": "Revenue" },
+        "meta": { "durationMs": 184, "readOnly": true }
+      }
+    },
+    {
+      "id": "messy",
+      "label": "Messy data warnings",
+      "response": {
+        "status": "success",
+        "answer": "Home & Kitchen has inconsistent stored labels. Technology leads recorded revenue at $48,250, but raw category totals need careful interpretation.",
+        "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price) AS revenue\nFROM order_items oi\nJOIN products p ON p.product_id = oi.product_id\nGROUP BY p.category\nORDER BY revenue DESC;",
+        "columns": ["Category", "Revenue"],
+        "rows": [["Home & Kitchen", 32480], ["home & kitchen ", 2140], ["Technology", 48250], ["TECHNOLOGY", 3180]],
+        "rowCount": 4,
+        "truncated": false,
+        "warnings": ["Category values contain inconsistent casing or trailing whitespace.", "Results reflect raw stored labels; no source values were changed."],
+        "verification": { "passed": true, "message": "Answer matches raw rows; quality limitations disclosed.", "checks": ["SQL executed without errors", "Answer values match returned rows", "Data-quality warnings disclosed"] },
+        "chart": { "type": "bar", "x": "Category", "y": "Revenue" },
+        "meta": { "durationMs": 231, "readOnly": true }
+      }
+    },
+    {
+      "id": "clarification",
+      "label": "Clarification needed",
+      "response": {
+        "status": "clarification_needed",
+        "answer": "Which time period should I use for ‘recent’: the last 30 days, this quarter, or this year?",
+        "sql": "",
+        "columns": [],
+        "rows": [],
+        "rowCount": 0,
+        "truncated": false,
+        "warnings": [],
+        "verification": { "passed": false, "message": "Waiting for clarification before generating SQL.", "checks": [] },
+        "chart": null,
+        "meta": {}
+      }
+    },
+    {
+      "id": "empty",
+      "label": "Successful empty result",
+      "response": {
+        "status": "success",
+        "answer": "No orders matched the selected criteria. The query executed successfully and returned zero rows.",
+        "sql": "SELECT order_id, customer_id, total\nFROM orders\nWHERE order_date >= DATE '2025-01-01'\nORDER BY order_id;",
+        "columns": ["Order ID", "Customer ID", "Total"],
+        "rows": [],
+        "rowCount": 0,
+        "truncated": false,
+        "warnings": ["An empty result is not an execution error."],
+        "verification": { "passed": true, "message": "Empty result confirmed by execution.", "checks": ["SQL executed without errors", "Zero rows returned"] },
+        "chart": null,
+        "meta": { "durationMs": 96, "readOnly": true }
+      }
+    },
+    {
+      "id": "offline",
+      "label": "Model unavailable",
+      "response": {
+        "status": "error",
+        "answer": "The AI model is unavailable. Check that the model server is running, then try again.",
+        "sql": "",
+        "columns": [],
+        "rows": [],
+        "rowCount": 0,
+        "truncated": false,
+        "warnings": [],
+        "verification": { "passed": false, "message": "No query was generated or executed.", "checks": [] },
+        "chart": null,
+        "meta": { "code": "model_offline" }
+      }
+    },
+    {
+      "id": "unsafe",
+      "label": "Unsafe SQL blocked",
+      "response": {
+        "status": "error",
+        "answer": "The generated request was blocked because only read-only queries are allowed.",
+        "sql": "DELETE FROM orders;",
+        "columns": [],
+        "rows": [],
+        "rowCount": 0,
+        "truncated": false,
+        "warnings": ["The statement was rejected before execution."],
+        "verification": { "passed": false, "message": "Safety validation failed; execution did not occur.", "checks": ["Read-only validation failed"] },
+        "chart": null,
+        "meta": { "code": "unsafe_sql" }
+      }
+    },
+    {
+      "id": "truncated",
+      "label": "Truncated results",
+      "response": {
+        "status": "success",
+        "answer": "Technology leads the returned results. The table is limited to the first four categories.",
+        "sql": "SELECT p.category, SUM(oi.quantity * oi.unit_price) AS revenue\nFROM order_items oi\nJOIN products p ON p.product_id = oi.product_id\nGROUP BY p.category\nORDER BY revenue DESC\nLIMIT 4;",
+        "columns": ["Category", "Revenue"],
+        "rows": [["Technology", 48250], ["Home & Kitchen", 32480], ["Sports", 18920], ["Books", 12640]],
+        "rowCount": 4,
+        "truncated": true,
+        "warnings": ["Results were truncated to 4 rows. Rankings beyond the returned rows are not shown."],
+        "verification": { "passed": true, "message": "Returned rows verified; truncation disclosed.", "checks": ["Answer values match returned rows", "Truncation warning disclosed"] },
+        "chart": { "type": "bar", "x": "Category", "y": "Revenue" },
+        "meta": { "durationMs": 201, "readOnly": true }
+      }
+    }
+  ]
+}

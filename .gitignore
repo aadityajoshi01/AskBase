@@ -10,3 +10,6 @@ coverage.json
 __pycache__/
 .pytest_cache/
 .coverage
+/agent4_ui-evaluation/.askbase-ui.pid
+/agent4_ui-evaluation/.askbase-ui.log
+/agent4_ui-evaluation/.askbase-ui.error.log

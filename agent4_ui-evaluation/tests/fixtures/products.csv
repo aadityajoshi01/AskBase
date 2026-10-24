@@ -1,0 +1,8 @@
+product_id,order_date,category,units,revenue
+1001,2026-01-03,Technology,2,1299.00
+1002,2026-01-03,Books,4,84.50
+1003,2026-01-04,Home & Kitchen,1,249.00
+1004,2026-01-05,home & kitchen ,2,398.00
+1005,2026-01-06,Sports,3,189.00
+1006,2026-01-07,TECHNOLOGY,1,649.00
+1007,2026-01-08,Books,2,42.00

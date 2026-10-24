@@ -1,0 +1,37 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AskBase Integration Contract",
+    "version": "2.0.0",
+    "description": "Proposed backend contract. The current build uses a mock backend; these routes are documentation only."
+  },
+  "paths": {
+    "/api/analyze": {
+      "post": {
+        "summary": "Run verified analysis",
+        "description": "Accepts a natural-language question and database configuration. Every generated query must use the backend safety path.",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["question", "databaseConfig"], "properties": { "question": { "type": "string" }, "databaseConfig": { "type": "object" } } } } } },
+        "responses": { "200": { "description": "Analysis response envelope", "content": { "application/json": { "schema": { "$ref": "../schemas/analysis-response.schema.json" } } } } }
+      }
+    },
+    "/api/datasets/profile": {
+      "post": {
+        "summary": "Profile an uploaded dataset",
+        "description": "Returns schema and bounded profiling information without modifying source data.",
+        "responses": { "200": { "description": "Dataset profile", "content": { "application/json": { "schema": { "$ref": "../schemas/dataset-profile.schema.json" } } } } }
+      }
+    },
+    "/api/schema": {
+      "get": {
+        "summary": "Discover database schema",
+        "responses": { "200": { "description": "Tables, columns, types, keys, and relationships" } }
+      }
+    },
+    "/api/evaluation/report": {
+      "get": {
+        "summary": "Retrieve an evaluation report",
+        "responses": { "200": { "description": "Evaluation metrics and scenario results", "content": { "application/json": { "schema": { "$ref": "../schemas/evaluation-report.schema.json" } } } } }
+      }
+    }
+  }
+}

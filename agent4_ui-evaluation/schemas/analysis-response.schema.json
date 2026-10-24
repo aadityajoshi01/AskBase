@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["status", "answer", "sql", "columns", "rows", "rowCount", "truncated", "warnings", "verification", "chart", "meta"],
+  "properties": {
+    "status": { "type": "string", "enum": ["success", "clarification_needed", "error"] },
+    "answer": { "type": "string" },
+    "sql": { "type": "string" },
+    "columns": { "type": "array", "items": { "type": "string" } },
+    "rows": { "type": "array", "items": { "type": "array" } },
+    "rowCount": { "type": "integer" },
+    "row_count": { "type": "integer" },
+    "truncated": { "type": "boolean" },
+    "warnings": { "type": "array", "items": { "type": "string" } },
+    "verification": {
+      "type": "object",
+      "required": ["passed", "message"],
+      "properties": {
+        "passed": { "type": "boolean" },
+        "message": { "type": "string" },
+        "checks": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "chart": { "type": ["object", "null"], "properties": { "type": { "type": "string" }, "x": { "type": "string" }, "y": { "type": "string" } } },
+    "meta": { "type": "object", "properties": { "durationMs": { "type": "number" }, "readOnly": { "type": "boolean" }, "code": { "type": "string" } } }
+  }
+}
