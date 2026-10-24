@@ -285,8 +285,7 @@ Pick a database (Sample retail, Kaggle Superstore, NASA C-MAPSS) or drop a CSV a
 `admin`, `analyst` and `viewer`. Stop with `stop_gateway.bat`, `stop_server.bat` and
 `ui-evaluation\stop.bat`.
 
-> The GitHub repo name ends with a literal `.`. On Windows clone into an explicit folder:
-> `git clone <url-with-trailing-dot> askbase`.
+> Clone: `git clone https://github.com/aadityajoshi01/AskBase.git`
 
 ### Configuration
 
