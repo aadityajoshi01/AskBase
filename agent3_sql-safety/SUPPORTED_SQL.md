@@ -1,7 +1,20 @@
 # Agent 3 — Supported SQL and Limitations
 
-Milestone 1: validation only (`backend/sql_validator.py`). Branch `feature/sql-verification`,
-based on `80965af`. Date: 2026-10-24.
+Milestone 1: validation only. Branch `feature/sql-verification`, rebased on `f9a5a8b`. Date: 2026-10-24.
+
+## Layout
+
+```
+agent3_sql-safety/
+  backend/__init__.py
+  backend/sql_validator.py   # validate_sql()
+  tests/test_sql_validator.py
+  SUPPORTED_SQL.md
+```
+
+Per-agent `backend/` directories match Agent 1's shipped layout (`agent1_ai-analyst/backend/…`);
+each agent's package is imported by running pytest from inside its own directory. Collapsing these
+into one root-level `backend/` is Agent 4's Gate 6 decision, not Agent 3's.
 
 ## Implemented
 
@@ -9,6 +22,15 @@ based on `80965af`. Date: 2026-10-24.
 - `tests/test_sql_validator.py` — 123 passing tests, no database, model or GPU needed.
 
 Fails closed: anything not explicitly recognised as a single read-only query is an error.
+
+### Compatibility with Agent 1's repair loop
+
+`agent1_ai-analyst/HANDOFF.md` injects the validator as
+`validate_sql(sql, dialect) -> {"valid": bool, "error": {"type", "message"} | None}`. This module's
+result is a superset of that shape — `valid` is a bool and `error` is exactly `{"type", "message"}`
+or `None` — so `generate_validated_sql(question, schema, validate_sql)` can pass this function
+directly. Dialect comes from `schema["dialect"]`, which Agent 1 defaults to `"sqlite"` — the same
+default used here.
 
 ## Supported dialects
 
@@ -82,8 +104,8 @@ Both outcomes carry the same keys:
 
 ## Security boundary — what validation does not cover
 
-Per report §5, a parser allowlist is not sufficient. Execution (`backend/query_executor.py`,
-milestone 2) must additionally enforce:
+Per report §5, a parser allowlist is not sufficient. Execution
+(`agent3_sql-safety/backend/query_executor.py`, milestone 2) must additionally enforce:
 
 1. a read-only connection/role (and, where supported, a read-only transaction);
 2. a statement timeout;
@@ -105,17 +127,19 @@ granted access to — that is a permissions concern for the executor and Agent 2
 
 ## Dependency
 
-`sqlglot>=30.0` was added to `requirements.txt` in this milestone (approved by the repository owner
-before touching that shared file). Set up and run:
+`sqlglot>=30.0` was added to the shared root `requirements.txt` in this milestone (approved by the
+repository owner before touching that shared file). Set up and run:
 
 ```
-py -m venv .venv
+py -m venv .venv                                  # from the repository root
 .venv/Scripts/python -m pip install -r requirements.txt
-.venv/Scripts/python -m pytest tests/ -q
+cd agent3_sql-safety
+../.venv/Scripts/python -m pytest tests -q        # same command shape as Agent 1's README
 ```
 
 ## Not yet implemented (later Agent 3 milestones)
 
-`backend/query_executor.py` (restricted execution, timeouts, row limits, typed failures),
-`backend/result_verifier.py` (count/total/ranking evidence checks, truncation disclosure),
-and the execution-path tests. Nothing here claims compatibility with modules that do not exist yet.
+`agent3_sql-safety/backend/query_executor.py` (restricted execution, timeouts, row limits, typed
+failures), `agent3_sql-safety/backend/result_verifier.py` (count/total/ranking evidence checks,
+truncation disclosure), and the execution-path tests. Nothing here claims compatibility with
+modules that do not exist yet.
