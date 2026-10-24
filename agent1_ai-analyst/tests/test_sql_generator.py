@@ -155,3 +155,57 @@ def test_generate_never_executes_sql(mock_llm, monkeypatch):
     text = open(src, encoding="utf-8").read()
     for forbidden in ("sqlite3", "execute(", "requests.post", "query_executor"):
         assert forbidden not in text, forbidden
+
+
+# ---- Part 5: clarification / ambiguity handling contract ----
+
+def test_missing_time_period_returns_clarification(mock_llm):
+    mock_llm(payload={"status": "clarification_needed", "sql": None, "assumptions": [],
+                      "clarification_question": "Which time period should 'recent' cover?"})
+    out = generate_sql("Show recent sales by region", SCHEMA)
+    assert out["status"] == "clarification_needed"
+    assert "time period" in out["clarification_question"].lower()
+
+
+def test_metric_not_in_schema_returns_clarification(mock_llm):
+    mock_llm(payload={"status": "clarification_needed", "sql": None,
+                      "assumptions": ["'profit' has no direct column"],
+                      "clarification_question": "Profit = total minus cost? cost isn't stored."})
+    out = generate_sql("What was our profit last quarter?", SCHEMA)
+    assert out["status"] == "clarification_needed"
+    assert out["assumptions"] == ["'profit' has no direct column"]
+
+
+def test_clarification_never_leaks_sql(mock_llm):
+    """Model misbehaving (clarification + sql together) must not pass SQL through."""
+    mock_llm(payload={"status": "clarification_needed", "sql": "SELECT total FROM orders",
+                      "clarification_question": "Per order or per customer?"})
+    out = generate_sql("How much do customers spend?", SCHEMA)
+    assert out["status"] == "clarification_needed"
+    assert out["sql"] is None
+
+
+def test_immaterial_defaults_recorded_as_assumptions(mock_llm):
+    mock_llm(payload={"status": "ok",
+                      "sql": "SELECT region, SUM(total) AS total FROM orders "
+                             "JOIN customers ON orders.customer_id = customers.id "
+                             "GROUP BY region ORDER BY total DESC LIMIT 10",
+                      "assumptions": ["defaulted sort to highest first",
+                                      "limited to top 10 regions"]})
+    out = generate_sql("sales by region", SCHEMA)
+    assert out["status"] == "ok"
+    assert len(out["assumptions"]) == 2
+
+
+def test_non_list_assumptions_coerced_to_empty(mock_llm):
+    mock_llm(payload={"status": "ok", "sql": "SELECT total FROM orders",
+                      "assumptions": "just one big string"})
+    out = generate_sql("show totals", SCHEMA)
+    assert out["status"] == "ok" and out["assumptions"] == []
+
+
+def test_prompt_defines_material_ambiguity_criteria():
+    """Guard: the criteria list must stay in the system prompt."""
+    prompt = sql_generator.SYSTEM_PROMPT
+    for phrase in ("time period", "metric", "clarifying question", "assumptions"):
+        assert phrase in prompt
