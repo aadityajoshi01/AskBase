@@ -10,6 +10,10 @@ coverage.json
 __pycache__/
 .pytest_cache/
 .coverage
-/agent4_ui-evaluation/.askbase-ui.pid
-/agent4_ui-evaluation/.askbase-ui.log
-/agent4_ui-evaluation/.askbase-ui.error.log
+/ui-evaluation/.askbase-ui.pid
+/ui-evaluation/.askbase-ui.log
+/ui-evaluation/.askbase-ui.error.log
+# uploaded CSVs become local SQLite datasets — never commit other people's data
+/gateway/uploads/
+/gateway/docstore/data/
+/gateway/docstore/sample_supplies.json

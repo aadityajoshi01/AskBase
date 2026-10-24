@@ -1,0 +1,31 @@
+[
+  {
+    "id": "sample_retail",
+    "label": "Sample retail (Agent 2 fixture)",
+    "type": "sqlite",
+    "path": "data-intelligence/sample_data/generated/simple_askbase.sqlite",
+    "build": "python data-intelligence/sample_data/create_sample_db.py"
+  },
+  {
+    "id": "superstore",
+    "label": "Kaggle Superstore",
+    "type": "sqlite",
+    "path": "ai-analyst/datasets/superstore.db",
+    "build": "python ai-analyst/datasets/build_datasets.py"
+  },
+  {
+    "id": "sample_supplies_docs",
+    "label": "MongoDB sample_supplies (NoSQL docs, TinyDB store)",
+    "type": "sqlite",
+    "path": "gateway/docstore/data/sample_supplies.sqlite",
+    "build": "python gateway/docstore/build_sample_supplies.py",
+    "source": "nosql-document-store"
+  },
+  {
+    "id": "cmapss",
+    "label": "NASA C-MAPSS engines",
+    "type": "sqlite",
+    "path": "ai-analyst/datasets/cmapss.db",
+    "build": "python ai-analyst/datasets/build_datasets.py"
+  }
+]

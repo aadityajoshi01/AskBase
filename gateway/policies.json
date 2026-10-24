@@ -1,0 +1,61 @@
+{
+  "comment": "Row limits and column masks per dataset and role. A role with no dataset entry falls back to role_defaults only; admin is always unrestricted. Row filters are structured data compiled to SQL, never SQL text copied from a caller.",
+  "role_defaults": {
+    "admin": { "unrestricted": true },
+    "analyst": {
+      "mask_name_patterns": ["email", "e-mail", "phone", "mobile", "password", "secret", "token", "api.?key", "credit.?card", "ssn", "social"],
+      "max_rows": 1000
+    },
+    "viewer": {
+      "mask_name_patterns": ["email", "e-mail", "phone", "mobile", "password", "secret", "token", "api.?key", "credit.?card", "ssn", "social", "postal_code", "address", "full_name"],
+      "max_rows": 200
+    }
+  },
+  "users": {
+    "admin": { "role": "admin", "label": "Data owner" },
+    "rita": { "role": "analyst", "label": "Analyst" },
+    "amit": { "role": "viewer", "label": "Business user (East only)" },
+    "lea": { "role": "viewer", "label": "Hostile caller (no extra claims)" }
+  },
+  "datasets": {
+    "superstore": {
+      "viewer": {
+        "row_filters": {
+          "customers": { "column": "region", "in": ["East"] },
+          "orders": {
+            "semi_join": {
+              "column": "customer_id", "from_table": "customers",
+              "where": { "column": "region", "in": ["East"] }
+            }
+          },
+          "line_items": {
+            "semi_join": {
+              "column": "order_id", "from_table": "orders",
+              "where": {
+                "semi_join": {
+                  "column": "customer_id", "from_table": "customers",
+                  "where": { "column": "region", "in": ["East"] }
+                }
+              }
+            }
+          }
+        },
+        "masked_columns": ["customers.name", "customers.postal_code"]
+      },
+      "analyst": { "masked_columns": ["customers.postal_code"] }
+    },
+    "sample_retail": {
+      "viewer": {
+        "row_filters": {
+          "orders": { "column": "status", "in": ["delivered"] },
+          "order_items": {
+            "semi_join": {
+              "column": "order_id", "from_table": "orders",
+              "where": { "column": "status", "in": ["delivered"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

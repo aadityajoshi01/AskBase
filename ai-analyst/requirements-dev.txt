@@ -1,0 +1,3 @@
+# Agent 1 dev/analysis extras (not needed for the mocked test suite or CI)
+pytest-cov>=5
+matplotlib>=3.8

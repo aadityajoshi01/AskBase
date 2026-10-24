@@ -2,3 +2,5 @@ requests>=2.31
 python-dotenv>=1.0
 pytest>=8.0
 sqlglot>=30.0
+tinydb>=4.8
+matplotlib>=3.8
